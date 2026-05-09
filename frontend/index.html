@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle de Estoque</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+    
+        <header class="header">
+            <h1>Sistema de Controle de Estoque</h1>
+            <p>Gerenciamento de Autopeças</p>
+        </header>
+
+       
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+            <button class="tab-btn" data-tab="produtos">Produtos</button>
+            <button class="tab-btn" data-tab="operadores">Operadores</button>
+            <button class="tab-btn" data-tab="movimentacoes">Movimentações</button>
+        </nav>
+
+        
+        <main class="content">
+            
+            <!-- Dashboard -->
+            <section id="dashboard" class="tab-content active">
+                <h2>Dashboard</h2>
+                <div class="kpis-grid">
+                    <div class="kpi-card">
+                        <h3>Total de Movimentações</h3>
+                        <p class="kpi-value" id="total-movimentacoes">-</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Total Entradas</h3>
+                        <p class="kpi-value" id="total-entradas">-</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Total Saídas</h3>
+                        <p class="kpi-value" id="total-saidas">-</p>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Produtos em Estoque</h3>
+                        <p class="kpi-value" id="produtos-estoque">-</p>
+                    </div>
+                </div>
+
+                <h3>Movimentações por Operador</h3>
+                <div id="operadores-chart" class="chart"></div>
+            </section>
+
+            <!-- Produtos -->
+            <section id="produtos" class="tab-content">
+                <h2>Produtos</h2>
+                <input type="text" id="search-produtos" placeholder="Buscar por SKU ou nome..." class="search-box">
+                <div id="produtos-list" class="list"></div>
+            </section>
+
+            <!-- Operadores -->
+            <section id="operadores" class="tab-content">
+                <h2>Operadores</h2>
+                <div id="operadores-list" class="list"></div>
+            </section>
+
+            <!-- Movimentações -->
+            <section id="movimentacoes" class="tab-content">
+                <h2>Registrar Movimentação</h2>
+                <form id="form-movimentacao" class="form">
+                    <div class="form-group">
+                        <label>Operador:</label>
+                        <select id="operador-select" required>
+                            <option value="">Selecione um operador</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Produto:</label>
+                        <select id="produto-select" required>
+                            <option value="">Selecione um produto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo:</label>
+                        <select id="tipo-select" required>
+                            <option value="">Selecione...</option>
+                            <option value="ENTRADA">Entrada</option>
+                            <option value="SAIDA">Saída</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade:</label>
+                        <input type="number" id="quantidade-input" min="1" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Registrar Movimentação</button>
+                </form>
+
+                <h3>Buscar Movimentações</h3>
+                <div class="form" style="background: #f0f8ff; border-left: 4px solid #667eea;">
+                    <div class="form-group">
+                        <label>Filtrar por Operador (opcional):</label>
+                        <select id="filter-operador">
+                            <option value="">Todos os operadores</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Filtrar por Produto (opcional):</label>
+                        <select id="filter-produto">
+                            <option value="">Todos os produtos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Filtrar por Tipo (opcional):</label>
+                        <select id="filter-tipo">
+                            <option value="">Todos os tipos</option>
+                            <option value="ENTRADA">Entrada</option>
+                            <option value="SAIDA">Saída</option>
+                        </select>
+                    </div>
+                    <button type="button" id="btn-filtrar" class="btn-primary">Filtrar</button>
+                    <button type="button" id="btn-limpar-filtro" class="btn-secondary">Limpar Filtros</button>
+                </div>
+
+                <h3>Movimentações</h3>
+                <div id="movimentacoes-list" class="list"></div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
