@@ -48,27 +48,31 @@ estoque-sistema/
 - Python 3.10+
 - PostgreSQL instalado e rodando
 - pgAdmin 4 (opcional)
-### 1. Clonar o repositório
+---
+ 
+### Linux / macOS
+ 
+#### 1. Clonar o repositório
  
 ```bash
 git clone https://github.com/Pacharrovski/estoque-sistema.git
 cd estoque-sistema
 ```
  
-### 2. Criar e ativar o ambiente virtual
+#### 2. Criar e ativar o ambiente virtual
  
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
  
-### 3. Instalar as dependências
+#### 3. Instalar as dependências
  
 ```bash
 pip install fastapi uvicorn sqlalchemy psycopg2-binary faker
 ```
  
-### 4. Configurar o banco de dados
+#### 4. Configurar o banco de dados
  
 Crie um banco chamado `estoque_db` no PostgreSQL e rode o script:
  
@@ -76,18 +80,14 @@ Crie um banco chamado `estoque_db` no PostgreSQL e rode o script:
 psql -U postgres -d estoque_db -f banco_dados/schema.sql
 ```
  
-### 5. Rodar o backend
+#### 5. Rodar o backend
  
 ```bash
 cd backend
 uvicorn main:app --reload
 ```
  
-A API estará disponível em `http://localhost:8000`
- 
-A documentação Swagger estará em `http://localhost:8000/docs`
- 
-### 6. Rodar o frontend
+#### 6. Rodar o frontend
  
 Em outro terminal:
  
@@ -96,7 +96,65 @@ cd frontend
 python3 -m http.server 5500
 ```
  
-Acesse `http://localhost:5500`
+---
+ 
+### Windows
+ 
+#### 1. Clonar o repositório
+ 
+```bash
+git clone https://github.com/Pacharrovski/estoque-sistema.git
+cd estoque-sistema
+```
+ 
+#### 2. Criar e ativar o ambiente virtual
+ 
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+ 
+> Se aparecer erro de permissão ao ativar o venv, abra o PowerShell como administrador e rode:
+> `Set-ExecutionPolicy RemoteSigned`
+> Depois tente ativar novamente.
+ 
+#### 3. Instalar as dependências
+ 
+```bash
+pip install fastapi uvicorn sqlalchemy psycopg2-binary faker
+```
+ 
+#### 4. Configurar o banco de dados
+ 
+Abra o pgAdmin 4, crie um banco chamado `estoque_db` e siga os passos:
+ 
+1. Clique com botão direito em `estoque_db`
+2. Escolha **Query Tool**
+3. Abra o arquivo `banco_dados/schema.sql`
+4. Execute o script completo (F5)
+#### 5. Rodar o backend
+ 
+```bash
+cd backend
+uvicorn main:app --reload
+```
+ 
+#### 6. Rodar o frontend
+ 
+Em outro terminal:
+ 
+```bash
+cd frontend
+python -m http.server 5500
+```
+ 
+---
+ 
+A API estará disponível em `http://localhost:8000`
+ 
+A documentação Swagger estará em `http://localhost:8000/docs`
+ 
+Acesse o frontend em `http://localhost:5500`
  
 ## Modelagem do Banco de Dados
  
