@@ -11,7 +11,6 @@ class Operador(Base):
     nome = Column(String(255), nullable=False)
     setor = Column(String(100), nullable=False)
 
-    # Relacionamento: um operador pode ter muitas movimentações
     movimentacoes = relationship("Movimentacao", back_populates="operador")
 
 
@@ -23,8 +22,9 @@ class Produto(Base):
     nome = Column(String(255), nullable=False)
     categoria = Column(String(100), nullable=False)
     quantidade_esperada = Column(Integer, nullable=False)
+    estoque_seguranca = Column(Integer, nullable=False, default=0)
+    prazo_entrega_dias = Column(Integer, nullable=False, default=1)
 
-    # Relacionamento: um produto pode ter muitas movimentações
     movimentacoes = relationship("Movimentacao", back_populates="produto")
 
 
@@ -41,6 +41,14 @@ class Movimentacao(Base):
     data = Column(TIMESTAMP(timezone=True),
                   nullable=False, default=datetime.utcnow)
 
-    # Relacionamentos: uma movimentação pertence a um operador e um produto
     operador = relationship("Operador", back_populates="movimentacoes")
     produto = relationship("Produto", back_populates="movimentacoes")
+
+
+class Configuracao(Base):
+    __tablename__ = "configuracoes"
+
+    id_configuracao = Column(Integer, primary_key=True, index=True)
+    chave = Column(String(100), unique=True, nullable=False)
+    valor = Column(String(255), nullable=False)
+    descricao = Column(String, nullable=True)

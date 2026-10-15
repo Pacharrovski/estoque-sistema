@@ -20,6 +20,7 @@
             <button class="tab-btn" data-tab="produtos">Produtos</button>
             <button class="tab-btn" data-tab="operadores">Operadores</button>
             <button class="tab-btn" data-tab="movimentacoes">Movimentações</button>
+            <button class="tab-btn" data-tab="estoque">Estoque</button>
         </nav>
 
         
@@ -63,6 +64,45 @@
                 <h2>Operadores</h2>
                 <div id="operadores-list" class="list"></div>
             </section>
+
+            <!-- Estoque -->
+<section id="estoque" class="tab-content">
+    <h2>Painel de Estoque</h2>
+    <div class="estoque-filtros">
+        <select id="filter-status-reposicao">
+            <option value="">Todos os status</option>
+            <option value="REPOR">Repor</option>
+            <option value="OK">OK</option>
+            <option value="SEM DADOS">Sem dados</option>
+        </select>
+        <select id="filter-categoria-estoque">
+            <option value="">Todas as categorias</option>
+        </select>
+        <button type="button" id="btn-filtrar-estoque" class="btn-primary">Filtrar</button>
+        <button type="button" id="btn-limpar-estoque" class="btn-secondary">Limpar</button>
+    </div>
+    <div class="estoque-info">
+        <span id="estoque-contador"></span>
+    </div>
+    <div class="table-wrapper">
+        <table class="estoque-table">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Qtd. Esperada</th>
+                    <th>Estoque Atual</th>
+                    <th>Cd (un/dia)</th>
+                    <th>PR (un)</th>
+                    <th>Status Cd</th>
+                    <th>Reposição</th>
+                </tr>
+            </thead>
+            <tbody id="estoque-tbody"></tbody>
+        </table>
+    </div>
+</section>
 
             <!-- Movimentações -->
             <section id="movimentacoes" class="tab-content">

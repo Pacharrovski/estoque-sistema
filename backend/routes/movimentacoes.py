@@ -9,16 +9,18 @@ from datetime import datetime
 
 router = APIRouter()
 
+
 @router.get("/movimentacoes", response_model=List[MovimentacaoComDetalhes])
 def listar_movimentacoes(db: Session = Depends(get_db)):
     movimentacoes = db.query(Movimentacao)\
         .options(
             joinedload(Movimentacao.operador),
             joinedload(Movimentacao.produto)
-        )\
+    )\
         .order_by(Movimentacao.data.desc())\
         .all()
     return movimentacoes
+
 
 @router.get("/movimentacoes/{id_movimentacao}", response_model=MovimentacaoComDetalhes)
 def obter_movimentacao(id_movimentacao: int, db: Session = Depends(get_db)):
@@ -26,22 +28,48 @@ def obter_movimentacao(id_movimentacao: int, db: Session = Depends(get_db)):
         .options(
             joinedload(Movimentacao.operador),
             joinedload(Movimentacao.produto)
-        )\
+    )\
         .filter(Movimentacao.id_movimentacao == id_movimentacao)\
         .first()
     if not movimentacao:
-        raise HTTPException(status_code=404, detail="Movimentação não encontrada")
+        raise HTTPException(
+            status_code=404, detail="Movimentação não encontrada")
     return movimentacao
+
 
 @router.post("/movimentacoes", response_model=MovimentacaoResponse)
 def criar_movimentacao(movimentacao: MovimentacaoCreate, db: Session = Depends(get_db)):
-    operador = db.query(Operador).filter(Operador.id_operador == movimentacao.id_operador).first()
+    operador = db.query(Operador).filter(
+        Operador.id_operador == movimentacao.id_operador).first()
     if not operador:
         raise HTTPException(status_code=404, detail="Operador não encontrado")
 
-    produto = db.query(Produto).filter(Produto.id_produto == movimentacao.id_produto).first()
+    produto = db.query(Produto).filter(
+        Produto.id_produto == movimentacao.id_produto).first()
     if not produto:
         raise HTTPException(status_code=404, detail="Produto não encontrado")
+
+    # Validação de estoque para saídas
+    if movimentacao.tipo == "SAIDA":
+        total_entradas = db.query(func.sum(Movimentacao.quantidade))\
+            .filter(
+                Movimentacao.id_produto == movimentacao.id_produto,
+                Movimentacao.tipo == "ENTRADA"
+        ).scalar() or 0
+
+        total_saidas = db.query(func.sum(Movimentacao.quantidade))\
+            .filter(
+                Movimentacao.id_produto == movimentacao.id_produto,
+                Movimentacao.tipo == "SAIDA"
+        ).scalar() or 0
+
+        estoque_atual = produto.quantidade_esperada + total_entradas - total_saidas
+
+        if movimentacao.quantidade > estoque_atual:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Estoque insuficiente. Estoque atual: {estoque_atual} unidade(s). Saída solicitada: {movimentacao.quantidade} unidade(s)."
+            )
 
     nova_movimentacao = Movimentacao(
         id_operador=movimentacao.id_operador,
@@ -55,9 +83,11 @@ def criar_movimentacao(movimentacao: MovimentacaoCreate, db: Session = Depends(g
     db.refresh(nova_movimentacao)
     return nova_movimentacao
 
+
 @router.get("/kpis")
 def obter_kpis(db: Session = Depends(get_db)):
-    total_movimentacoes = db.query(func.count(Movimentacao.id_movimentacao)).scalar()
+    total_movimentacoes = db.query(func.count(
+        Movimentacao.id_movimentacao)).scalar()
 
     total_entradas = db.query(func.sum(Movimentacao.quantidade))\
         .filter(Movimentacao.tipo == "ENTRADA").scalar() or 0

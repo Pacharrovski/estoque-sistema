@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine, Base
-from routes import produtos, operadores, movimentacoes
+from routes import produtos, operadores, movimentacoes, estoque
 
 # Cria a aplicação FastAPI
 app = FastAPI(
@@ -26,6 +26,7 @@ Base.metadata.create_all(bind=engine)
 app.include_router(produtos.router, prefix="/api", tags=["Produtos"])
 app.include_router(operadores.router, prefix="/api", tags=["Operadores"])
 app.include_router(movimentacoes.router, prefix="/api", tags=["Movimentações"])
+app.include_router(estoque.router, prefix="/api", tags=["Estoque"])
 
 # Rota raiz (pra testar se a API está no ar)
 

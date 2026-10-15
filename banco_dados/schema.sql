@@ -11,7 +11,9 @@ CREATE TABLE produtos (
     sku VARCHAR(50) NOT NULL UNIQUE,
     nome VARCHAR(255) NOT NULL,
     categoria VARCHAR(100) NOT NULL,
-    quantidade_esperada INTEGER NOT NULL
+    quantidade_esperada INTEGER NOT NULL,
+    estoque_seguranca INTEGER NOT NULL DEFAULT 0,
+    prazo_entrega_dias INTEGER NOT NULL DEFAULT 1
 );
 
 CREATE TABLE movimentacoes (
@@ -23,6 +25,13 @@ CREATE TABLE movimentacoes (
     data TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_operador FOREIGN KEY (id_operador) REFERENCES operadores(id_operador) ON DELETE RESTRICT,
     CONSTRAINT fk_produto FOREIGN KEY (id_produto) REFERENCES produtos(id_produto) ON DELETE RESTRICT
+);
+
+CREATE TABLE configuracoes (
+    id_configuracao SERIAL PRIMARY KEY,
+    chave VARCHAR(100) NOT NULL UNIQUE,
+    valor VARCHAR(255) NOT NULL,
+    descricao TEXT
 );
 
 -- INSERÇÃO DE DADOS
@@ -63,3 +72,10 @@ VALUES
   (2, 13, 'SAIDA', 8, '2026-05-04 15:45:00+00'),
   (3, 11, 'ENTRADA', 30, '2026-05-05 07:50:00+00'),
   (1, 9, 'SAIDA', 10, '2026-05-05 16:00:00+00');
+
+  INSERT INTO configuracoes (chave, valor, descricao)
+VALUES (
+    'janela_consumo_dias',
+    '90',
+    'Janela de dias usada para calcular o consumo médio diário (Cd). Padrão: 90 dias.'
+);

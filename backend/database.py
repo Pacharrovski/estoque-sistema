@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.pool import StaticPool
 
 # Connection string
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/estoque_db"
+DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/estoque_db"
 
 # Cria o engine
 engine = create_engine(
