@@ -219,5 +219,5 @@ Acesse o frontend em `http://localhost:5500`
 ## Autor
  
 **Samuel Pacharra Lopes Martins**
-- LinkedIn: [linkedin.com/in/samuel-p-aa194a2a9](https://linkedin.com/in/samuel-p-aa194a2a9)
+- LinkedIn: [linkedin.com/in/samuelpacharra](https://linkedin.com/in/samuelpacharra)
 - Email: samuelpacharramartins@gmail.com
