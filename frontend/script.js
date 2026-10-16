@@ -6,6 +6,7 @@ let produtos = [];
 let operadores = [];
 let movimentacoes = [];
 let dadosEstoque = [];
+let categoriaSelecionada = '';
 
 // ===== INICIALIZAÇÃO =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,16 +20,14 @@ document.addEventListener('DOMContentLoaded', () => {
 async function carregarDados() {
     try {
         console.log('Carregando dados da API...');
-        
-        // Carrega os 4 dados
+
         produtos = await fetch(`${API_URL}/produtos`).then(r => r.json());
         operadores = await fetch(`${API_URL}/operadores`).then(r => r.json());
         movimentacoes = await fetch(`${API_URL}/movimentacoes`).then(r => r.json());
         dadosEstoque = await fetch(`${API_URL}/estoque`).then(r => r.json());
-        
+
         console.log('Dados carregados:', { produtos, operadores, movimentacoes });
-        
-        // Renderiza os dados nas telas
+
         renderizarKPIs();
         renderizarProdutos();
         renderizarOperadores();
@@ -46,12 +45,12 @@ async function carregarDados() {
 async function renderizarKPIs() {
     try {
         const kpis = await fetch(`${API_URL}/kpis`).then(r => r.json());
-        
+
         document.getElementById('total-movimentacoes').textContent = kpis.total_movimentacoes;
         document.getElementById('total-entradas').textContent = kpis.total_entradas;
         document.getElementById('total-saidas').textContent = kpis.total_saidas;
         document.getElementById('produtos-estoque').textContent = kpis.produtos_em_estoque;
-        
+
         renderizarGraficoOperadores(kpis.movimentacoes_por_operador);
     } catch (erro) {
         console.error('Erro ao carregar KPIs:', erro);
@@ -62,7 +61,7 @@ async function renderizarKPIs() {
 function renderizarGraficoOperadores(dados) {
     const chartDiv = document.getElementById('operadores-chart');
     chartDiv.innerHTML = '';
-    
+
     dados.forEach(item => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'chart-item';
@@ -75,20 +74,21 @@ function renderizarGraficoOperadores(dados) {
 }
 
 // ===== RENDERIZAR PRODUTOS =====
-function renderizarProdutos(filtro = '') {
+function renderizarProdutos(filtro = '', categoria = '') {
     const listDiv = document.getElementById('produtos-list');
     listDiv.innerHTML = '';
-    
-    const produtosFiltrados = produtos.filter(p => 
-        p.sku.toLowerCase().includes(filtro.toLowerCase()) ||
-        p.nome.toLowerCase().includes(filtro.toLowerCase())
+
+    const produtosFiltrados = produtos.filter(p =>
+        (p.sku.toLowerCase().includes(filtro.toLowerCase()) ||
+        p.nome.toLowerCase().includes(filtro.toLowerCase())) &&
+        (categoria === '' || p.categoria === categoria)
     );
-    
+
     if (produtosFiltrados.length === 0) {
         listDiv.innerHTML = '<p style="text-align: center; color: #999;">Nenhum produto encontrado</p>';
         return;
     }
-    
+
     produtosFiltrados.forEach(produto => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'list-item';
@@ -106,7 +106,7 @@ function renderizarProdutos(filtro = '') {
 function renderizarOperadores() {
     const listDiv = document.getElementById('operadores-list');
     listDiv.innerHTML = '';
-    
+
     operadores.forEach(operador => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'list-item';
@@ -152,7 +152,6 @@ function renderizarMovimentacoes(pagina = 1) {
         listDiv.appendChild(itemDiv);
     });
 
-    // Paginação
     if (totalPaginas > 1) {
         const paginacaoDiv = document.createElement('div');
         paginacaoDiv.className = 'paginacao';
@@ -180,62 +179,119 @@ function renderizarMovimentacoes(pagina = 1) {
     }
 }
 
+// ===== FILTRAR MOVIMENTAÇÕES =====
+function filtrarMovimentacoes(idOperador, idProduto, tipo, dataInicio, dataFim) {
+    const listDiv = document.getElementById('movimentacoes-list');
+    listDiv.innerHTML = '';
+
+    let movimentacoesFiltradas = movimentacoes;
+
+    if (idOperador) {
+        movimentacoesFiltradas = movimentacoesFiltradas.filter(m => m.id_operador === parseInt(idOperador));
+    }
+
+    if (idProduto) {
+        movimentacoesFiltradas = movimentacoesFiltradas.filter(m => m.id_produto === parseInt(idProduto));
+    }
+
+    if (tipo) {
+        movimentacoesFiltradas = movimentacoesFiltradas.filter(m => m.tipo === tipo);
+    }
+
+    if (dataInicio) {
+        const inicio = new Date(dataInicio);
+        movimentacoesFiltradas = movimentacoesFiltradas.filter(m => new Date(m.data) >= inicio);
+    }
+
+    if (dataFim) {
+        const fim = new Date(dataFim);
+        fim.setHours(23, 59, 59, 999);
+        movimentacoesFiltradas = movimentacoesFiltradas.filter(m => new Date(m.data) <= fim);
+    }
+
+    if (movimentacoesFiltradas.length === 0) {
+        listDiv.innerHTML = '<p style="text-align: center; color: #999;">Nenhuma movimentação encontrada</p>';
+        return;
+    }
+
+    movimentacoesFiltradas.forEach(mov => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'list-item';
+        const tipoClass = mov.tipo === 'ENTRADA' ? 'entrada' : 'saida';
+        itemDiv.innerHTML = `
+            <h4>${mov.produto.sku} - ${mov.produto.nome}</h4>
+            <p><strong>Operador:</strong> ${mov.operador.nome}</p>
+            <p><strong>Tipo:</strong> <span class="tipo-${tipoClass}">${mov.tipo}</span></p>
+            <p><strong>Quantidade:</strong> ${mov.quantidade}</p>
+            <p><strong>Data:</strong> ${new Date(mov.data).toLocaleString('pt-BR')}</p>
+        `;
+        listDiv.appendChild(itemDiv);
+    });
+}
+
 // ===== PREENCHER SELECTS DO FORMULÁRIO =====
 function preencherSelects() {
     const operadorSelect = document.getElementById('operador-select');
     const produtoSelect = document.getElementById('produto-select');
     const filterOperadorSelect = document.getElementById('filter-operador');
     const filterProdutoSelect = document.getElementById('filter-produto');
-    
+
     operadorSelect.innerHTML = '<option value="">Selecione um operador</option>';
     produtoSelect.innerHTML = '<option value="">Selecione um produto</option>';
     filterOperadorSelect.innerHTML = '<option value="">Todos os operadores</option>';
     filterProdutoSelect.innerHTML = '<option value="">Todos os produtos</option>';
-    
+
     operadores.forEach(op => {
         const option1 = document.createElement('option');
         option1.value = op.id_operador;
         option1.textContent = op.nome;
         operadorSelect.appendChild(option1);
-        
+
         const option2 = document.createElement('option');
         option2.value = op.id_operador;
         option2.textContent = op.nome;
         filterOperadorSelect.appendChild(option2);
     });
-    
+
     produtos.forEach(prod => {
         const option1 = document.createElement('option');
         option1.value = prod.id_produto;
         option1.textContent = `${prod.sku} - ${prod.nome}`;
         produtoSelect.appendChild(option1);
-        
+
         const option2 = document.createElement('option');
         option2.value = prod.id_produto;
         option2.textContent = `${prod.sku} - ${prod.nome}`;
         filterProdutoSelect.appendChild(option2);
     });
+
+        // Preencher categorias dos produtos
+    const categoriaProdutosSelect = document.getElementById('filter-categoria-produtos');
+    const categoriasProdutos = [...new Set(produtos.map(p => p.categoria))].sort();
+    categoriaProdutosSelect.innerHTML = '<option value="">Todas as categorias</option>';
+    categoriasProdutos.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        categoriaProdutosSelect.appendChild(opt);
+    });
+
 }
 
 // ===== CONFIGURAR ABAS =====
 function configurarAbas() {
     const tabBtns = document.querySelectorAll('.tab-btn');
-    
+
     tabBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const tabName = btn.getAttribute('data-tab');
-            
-            // Remove classe active de todos os botões
+
             tabBtns.forEach(b => b.classList.remove('active'));
-            
-            // Adiciona classe active ao botão clicado
             btn.classList.add('active');
-            
-            // Esconde todas as abas
+
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(tab => tab.classList.remove('active'));
-            
-            // Mostra a aba selecionada
+
             document.getElementById(tabName).classList.add('active');
         });
     });
@@ -244,26 +300,24 @@ function configurarAbas() {
 // ===== CONFIGURAR FORMULÁRIO =====
 function configurarFormulario() {
     const form = document.getElementById('form-movimentacao');
-    
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const idOperador = document.getElementById('operador-select').value;
         const idProduto = document.getElementById('produto-select').value;
         const tipo = document.getElementById('tipo-select').value;
         const quantidade = document.getElementById('quantidade-input').value;
-        
+
         if (!idOperador || !idProduto || !tipo || !quantidade) {
             mostrarMensagem('Preencha todos os campos', 'error');
             return;
         }
-        
+
         try {
             const response = await fetch(`${API_URL}/movimentacoes`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     id_operador: parseInt(idOperador),
                     id_produto: parseInt(idProduto),
@@ -272,20 +326,22 @@ function configurarFormulario() {
                     data: new Date().toISOString()
                 })
             });
-            
+
             if (response.ok) {
                 mostrarMensagem('Movimentação registrada com sucesso!', 'success');
                 form.reset();
-                carregarDados(); // Recarrega todos os dados
+                carregarDados();
             } else {
-                mostrarMensagem('Erro ao registrar movimentação', 'error');
+                const erro = await response.json();
+                mostrarMensagem(erro.detail || 'Erro ao registrar movimentação', 'error');
             }
         } catch (erro) {
             console.error('Erro:', erro);
             mostrarMensagem('Erro ao registrar movimentação', 'error');
         }
     });
-// ===== FILTRAR MOVIMENTAÇÕES =====
+
+    // ===== FILTROS DE MOVIMENTAÇÕES =====
     const btnFiltrar = document.getElementById('btn-filtrar');
     const btnLimpar = document.getElementById('btn-limpar-filtro');
 
@@ -293,17 +349,21 @@ function configurarFormulario() {
         const idOperador = document.getElementById('filter-operador').value;
         const idProduto = document.getElementById('filter-produto').value;
         const tipo = document.getElementById('filter-tipo').value;
-        filtrarMovimentacoes(idOperador, idProduto, tipo);
+        const dataInicio = document.getElementById('filter-data-inicio').value;
+        const dataFim = document.getElementById('filter-data-fim').value;
+        filtrarMovimentacoes(idOperador, idProduto, tipo, dataInicio, dataFim);
     });
 
     btnLimpar.addEventListener('click', () => {
         document.getElementById('filter-operador').value = '';
         document.getElementById('filter-produto').value = '';
         document.getElementById('filter-tipo').value = '';
+        document.getElementById('filter-data-inicio').value = '';
+        document.getElementById('filter-data-fim').value = '';
         renderizarMovimentacoes();
     });
-    
-        // ===== FILTROS DE ESTOQUE =====
+
+    // ===== FILTROS DE ESTOQUE =====
     const btnFiltrarEstoque = document.getElementById('btn-filtrar-estoque');
     const btnLimparEstoque = document.getElementById('btn-limpar-estoque');
 
@@ -321,12 +381,17 @@ function configurarFormulario() {
 }
 
 // ===== CONFIGURAR BUSCA =====
+
 function configurarBusca() {
     const searchBox = document.getElementById('search-produtos');
-    
+    const categoriaSelect = document.getElementById('filter-categoria-produtos');
+
     searchBox.addEventListener('input', (e) => {
-        const filtro = e.target.value;
-        renderizarProdutos(filtro);
+        renderizarProdutos(e.target.value, categoriaSelect.value);
+    });
+
+    categoriaSelect.addEventListener('change', (e) => {
+        renderizarProdutos(searchBox.value, e.target.value);
     });
 }
 
@@ -379,10 +444,10 @@ function renderizarEstoque(filtroStatus = '', filtroCategoria = '') {
 
 function badgeStatusCd(status) {
     const mapa = {
-        'NORMAL':              'badge-normal',
-        'PROVISÓRIO':          'badge-provisorio',
-        'BAIXA CONFIABILIDADE':'badge-baixa-conf',
-        'SEM MOVIMENTO':       'badge-sem-movimento'
+        'NORMAL':               'badge-normal',
+        'PROVISÓRIO':           'badge-provisorio',
+        'BAIXA CONFIABILIDADE': 'badge-baixa-conf',
+        'SEM MOVIMENTO':        'badge-sem-movimento'
     };
     const cls = mapa[status] || 'badge-sem-dados';
     return `<span class="badge ${cls}">${status}</span>`;
@@ -390,9 +455,9 @@ function badgeStatusCd(status) {
 
 function badgeReposicao(status) {
     const mapa = {
-        'OK':       'badge-ok',
-        'REPOR':    'badge-repor',
-        'SEM DADOS':'badge-sem-dados'
+        'OK':        'badge-ok',
+        'REPOR':     'badge-repor',
+        'SEM DADOS': 'badge-sem-dados'
     };
     const cls = mapa[status] || 'badge-sem-dados';
     return `<span class="badge ${cls}">${status}</span>`;
@@ -414,13 +479,11 @@ function preencherFiltrosCategoriaEstoque() {
 // ===== MOSTRAR MENSAGEM =====
 function mostrarMensagem(texto, tipo) {
     const messageDiv = document.createElement('div');
-    messageDiv.className = tipo; // 'success' ou 'error'
+    messageDiv.className = tipo;
     messageDiv.textContent = texto;
-    
-    // Insere no topo do content
+
     const content = document.querySelector('.content');
     content.insertBefore(messageDiv, content.firstChild);
-    
-    // Remove a mensagem após 3 segundos
+
     setTimeout(() => messageDiv.remove(), 3000);
 }

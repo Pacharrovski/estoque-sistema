@@ -55,7 +55,12 @@
             <!-- Produtos -->
             <section id="produtos" class="tab-content">
                 <h2>Produtos</h2>
-                <input type="text" id="search-produtos" placeholder="Buscar por SKU ou nome..." class="search-box">
+                <div class="produtos-filtros">
+                <input type="text" id="search-produtos" placeholder="Buscar por SKU ou nome..." class="search-box" style="margin-bottom: 0;">
+                <select id="filter-categoria-produtos">
+                <option value="">Todas as categorias</option>
+                </select>
+                </div>
                 <div id="produtos-list" class="list"></div>
             </section>
 
@@ -136,7 +141,7 @@
                 </form>
 
                 <h3>Buscar Movimentações</h3>
-                <div class="form" style="background: #f0f8ff; border-left: 4px solid #667eea;">
+                    <div class="form" style="background: #f0f8ff; border-left: 4px solid #667eea;">
                     <div class="form-group">
                         <label>Filtrar por Operador (opcional):</label>
                         <select id="filter-operador">
@@ -157,10 +162,18 @@
                             <option value="SAIDA">Saída</option>
                         </select>
                     </div>
-                    <button type="button" id="btn-filtrar" class="btn-primary">Filtrar</button>
-                    <button type="button" id="btn-limpar-filtro" class="btn-secondary">Limpar Filtros</button>
-                </div>
-
+                    <div class="form-group">
+                        <label>Data inicial (opcional):</label>
+                        <input type="date" id="filter-data-inicio">
+                    </div>
+                    <div class="form-group">
+                        <label>Data final (opcional):</label>
+                        <input type="date" id="filter-data-fim">
+                    </div>
+                        <button type="button" id="btn-filtrar" class="btn-primary">Filtrar</button>
+                        <button type="button" id="btn-limpar-filtro" class="btn-secondary">Limpar Filtros</button>
+                    </div>
+                    
                 <h3>Movimentações</h3>
                 <div id="movimentacoes-list" class="list"></div>
             </section>
